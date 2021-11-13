@@ -59,10 +59,17 @@ async function run (){
         })
 
         // delete data from cart delete api
-    app.delete("/delete/:id", async (req, res) => {
+    app.delete("/purchases/:id", async (req, res) => {
         const id = req.params.id;
         const query = { _id: ObjectId(id) };
         const result = await purchasesCollection.deleteOne(query);
+        res.json(result);
+      });
+        // delete data from cart delete api
+    app.delete("/products/:id", async (req, res) => {
+        const id = req.params.id;
+        const query = { _id: ObjectId(id) };
+        const result = await productsCollection.deleteOne(query);
         res.json(result);
       });
       // confirmation
@@ -109,23 +116,14 @@ async function run (){
         res.json(result);
     });
 
-    app.put('/users/admin', verifyToken, async (req, res) => {
+    app.put('/users/admin', async (req, res) => {
         const user = req.body;
-        const requester = req.decodedEmail;
-        if (requester) {
-            const requesterAccount = await usersCollection.findOne({ email: requester });
-            if (requesterAccount.role === 'admin') {
+        
                 const filter = { email: user.email };
                 const updateDoc = { $set: { role: 'admin' } };
                 const result = await usersCollection.updateOne(filter, updateDoc);
                 res.json(result);
-            }
-        }
-        else {
-            res.status(403).json({ message: 'you do not have access to make admin' })
-        }
-
-    })
+            });
         // Post API
         app.post('/products', async (req, res) => {
             const product = req.body;
@@ -145,6 +143,12 @@ async function run (){
             res.json(result);
         })
 
+        //Get API
+        app.get('/reviews', async(req, res) =>{
+            const cursor = reviewsCollection.find({});
+            const reviews = await cursor.toArray();
+            res.send(reviews);
+        })
         //Get API
         app.get('/products', async(req, res) =>{
             const cursor = productsCollection.find({});
